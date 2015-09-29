@@ -1,0 +1,53 @@
+body {
+    background-color: SkyBlue;
+}
+
+h1 {
+    text-align: center;
+}
+
+.wrapper {
+    width: 100%;
+    background: PaleGreen;
+    text-align: center;
+}
+
+ul#cdf-list,
+    ul#cdf-list li {
+    /* Setting a common base */
+    margin: 1%;
+    padding: 1%;
+}
+	
+ul#cdf-list {
+    
+}
+
+ul#cdf-list li {
+    display: inline-block;
+    margin: 10px;
+    border: 3px solid black;
+    border-radius: 8px;
+    text-align: center;
+    
+    /* For IE 7 */
+    zoom: 1;
+    *display: inline;
+}
+
+ul#cdf-list a {
+    
+}
+
+ul#cdf-list a:hover {
+    text-decoration: none;
+    background-color: SkyBlue;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 15px;
+}

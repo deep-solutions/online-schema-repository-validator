@@ -1,0 +1,20 @@
+{
+    "article": {
+        "title": "Article",
+        "version": "1.0",
+        "uri": "/Article",
+        "schema": "XSD"
+    },
+    "order": {
+        "title": "Order",
+        "version": "1.0",
+        "uri": "/Order",
+        "schema": "XSD"
+    },
+    "employee": {
+        "title": "Employee",
+        "version": "1.0",
+        "uri": "/Employee",
+        "schema": "XSD"
+    }
+}
