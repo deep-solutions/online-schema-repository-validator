@@ -12,9 +12,9 @@
         $( document ).ready(function() {
             var cdf_list = $('#cdf-list').get(0);
             // alert(cdf_list.outerHTML);
-            $.get('/cdf_list.json', function(response) {
+            $.get('./cdf_list.json', function(response) {
                 var result = JSON.parse(response);
-                // alert(response);
+                // alert(result);
                 $.each(result, function(cdftype, properties) {
                     // alert(properties.title);
                     var li = $('<li/>')
