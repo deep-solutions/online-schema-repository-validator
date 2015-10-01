@@ -7,7 +7,7 @@ var http = require("http"),
 http.createServer(function(request, response) {
 
   var uri = url.parse(request.url).pathname
-    , filename = path.join(process.cwd(), uri);
+    , filename = path.join(process.cwd() + "/site-prototype", uri);
   
   fs.exists(filename, function(exists) {
     if(!exists) {
