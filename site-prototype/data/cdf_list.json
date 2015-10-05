@@ -1,0 +1,16 @@
+{
+    "article_1.0": {
+        "title": "Article",
+        "version": "1.0",
+        "uri": "/data/current/schemas/Article/1.0",
+        "schema": "XSD",
+		"archived": "false"
+    },
+    "employee_1.0": {
+        "title": "Employee",
+        "version": "1.0",
+        "uri": "/data/current/schemas/Employee/1.0",
+        "schema": "XSD",
+		"archived": "false"
+    }
+}

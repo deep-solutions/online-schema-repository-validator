@@ -3,21 +3,19 @@
 
   <head>
 
-  	<title>Common Data Formats Repository</title>
+  	<title>Common Data Formats Archive</title>
     <link rel="stylesheet" href="/css/default.css">
     <meta charset="utf-8">
 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script type="text/javascript">
         $( document ).ready(function() {
-            var cdf_list = $('#cdf-list').get(0);
-            // alert(cdf_list.outerHTML);
+            var cdf_list = $('#archived-cdf-list').get(0);
             $.get('/data/cdf_list.json', function(response) {
                 var result = JSON.parse(response);
-                // alert(result);
                 $.each(result, function() {
-					if (this.archived == 'true') return;
-					var li = $('<li/>')
+					if (this.archived == 'false') return;
+                    var li = $('<li/>')
                         .appendTo(cdf_list);
                     var a = $('<a/>')
                         .attr('href', this.uri)
@@ -32,12 +30,10 @@
   <body>
 
     <h1>Common Data Formats Repository</h1>
-    <p>This is a prototype server for CDF Schemas.</p>
+    <p>Archived CDFs are kept here in the basement.</p>
 
     <div class="wrapper">
-        <ul id="cdf-list">
-            <li><a href="/forms/new_cdf_form.html">+ Add new</a></li>
-            <li><a href="/data/archive">View archived</a></li>
+        <ul id="archived-cdf-list">
         </ul>
     </div>
 
