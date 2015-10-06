@@ -1,5 +1,5 @@
 body {
-    background-color: SkyBlue;
+    background-color: ALICEBLUE;
 }
 
 h1 {
@@ -8,7 +8,7 @@ h1 {
 
 .wrapper {
     width: 100%;
-    background: PaleGreen;
+    background: GAINSBORO;
     text-align: center;
 }
 

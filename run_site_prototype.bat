@@ -9,7 +9,7 @@ where /q node || echo node.js not found! && goto :error
 rem ensure required npm modules are present, e.g. sqlite3
 
 rem start the server
-node scripts/server.js
+node server.js
 
 pause
 goto :EOF
