@@ -8,27 +8,7 @@
     <meta charset="utf-8">
 	
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script type="text/javascript">
-		$( document ).ready(function() {
-			var current_path = window.location.pathname;
-			// alert(current_path);
-			$.get("/data/cdf_list.json", function(response) {
-				var result = JSON.parse(response);
-				var cdf_name = $('#cdf-name');
-				var cdf_version = $('#cdf-version');
-				var cdf_address = $('#cdf-address');
-				$.each(result, function() {
-					if (this.uri == current_path) {
-						$(document).prop('title', 'Common Data Format - ' + this.title)
-						cdf_name.html(this.title);
-						cdf_version.html(this.version);
-						cdf_address.html("<a href=" + this.schemaUri + ">here</a>");
-						return;
-					};
-				});
-			});
-		});
-	</script>
+    <script type="text/javascript" src="/js/view_cdf.js"></script>
   </head>
 
   <body>

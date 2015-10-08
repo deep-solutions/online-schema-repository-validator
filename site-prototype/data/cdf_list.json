@@ -1,20 +1,20 @@
 {
-    "article_1.0": {
+    "article": {
         "id": 1,
         "title": "Article",
         "version": "1.0",
         "uri": "/data/current/schemas/Article/1.0",
         "schemaType": "XSD",
         "schemaUri": "/data/current/schemas/Article/Article.xsd",
-        "archived": "false"
+        "archived": {}
     },
-    "employee_1.0": {
+    "employee": {
         "id": 2,
         "title": "Employee",
         "version": "1.0",
         "uri": "/data/current/schemas/Employee/1.0",
         "schemaType": "XSD",
         "schemaUri": "/data/current/schemas/Employee/Employee.xsd",
-        "archived": "false"
+        "archived": {}
     }
 }
