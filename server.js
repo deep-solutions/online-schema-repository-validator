@@ -16,10 +16,46 @@ var http = require("http"),
 	port = process.argv[2] || 8888,
     site_root = process.cwd() + "/site-prototype",
     json_file_name = site_root + "/data/cdf_list.json",
-    wiki_template_file_name = site_root + "/templates/cdf/index.html";
+    wiki_template_file_name = "/templates/cdf/index.html";
 
-function copyFile(path1, path2) {
-	fs.createReadStream(site_root + path1).pipe(fs.createWriteStream(site_root + path2));
+function copyFile(path1, path2, callback) {
+	// fs.createReadStream().pipe(fs.createWriteStream());
+    var cb_called = false,
+        source = site_root + path1,
+        target = site_root + path2;
+
+    var rd = fs.createReadStream(source);
+    rd.on("error", function (err) {
+        done(err);
+    });
+    var wr = fs.createWriteStream(target);
+    wr.on("error", function (err) {
+        done(err);
+    });
+    wr.on("close", function (ex) {
+        done();
+    });
+    rd.pipe(wr);
+
+    function done(err) {
+        if (!cb_called) {
+            console.log(err);
+            callback(err);
+            cb_called = true;
+        }
+    }
+}
+
+function createFolder(new_dir, callback) {
+    mkdirp.sync(site_root + new_dir, function(err) {
+        if (err) {
+		  console.log(err);
+		  callback(err);
+		} else {
+		  console.log("Path created: " + new_dir);
+		  callback(null);
+		}
+    });
 }
 
 function processPost(request, response, callback) {
@@ -77,11 +113,25 @@ function addCDFEntry(name, version, schema_type, callback) {
 	// Add new entry to file
     var new_cdf_path = "/data/current/schemas/" + name + "/" + version;
     // Create the new path
-    mkdirp(new_cdf_path, function(err) {
-        console.log(err);
-        callback(err, null);
-        return;
-    });
+    createFolder(new_cdf_path, function(err) {
+		if (err) {
+		  console.log("Error creating folder: " + err);
+		  callback(err, null);
+          return;
+		} else {
+		  console.log("Folder created at " + new_cdf_path);
+		}
+	});
+    // Create wiki
+    copyFile(wiki_template_file_name, new_cdf_path + "/index.html", function(err) {
+		if (err) {
+		  console.log("Error creating wiki: " + err);
+		  callback(err, null);
+          return;
+		} else {
+		  console.log("Wiki created at " + new_cdf_path);
+		}
+	});
 	cdf_list[new_cdf_key] = new Object();
 	cdf_list[new_cdf_key].id = max_id + 1;
 	cdf_list[new_cdf_key].title = name;
@@ -94,11 +144,13 @@ function addCDFEntry(name, version, schema_type, callback) {
 		if (err) {
 		  console.log(err);
 		  callback(err, null);
+          return;
 		} else {
 		  console.log("JSON saved to " + json_file_name);
-		  callback(null, "OK");
 		}
 	});
+    
+    callback(null, "OK");
 }
 
 function addNewCDFVersion(name, version, schema_type, callback) {
