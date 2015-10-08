@@ -153,7 +153,7 @@ function addCDFEntry(name, version, schema_type, callback) {
     callback(null, "OK");
 }
 
-function addNewCDFVersion(name, version, schema_type, callback) {
+function changeCDFVersion(name, version, schema_type, callback) {
 	var cdf_list = require(json_file_name);
 	if (typeof callback !== 'function')
 		return null;
@@ -167,21 +167,41 @@ function addNewCDFVersion(name, version, schema_type, callback) {
                 new_schema_path = cdf.schemaUri;
 			console.log("Changing " + name + " version from " + cdf.version + " to " + version);
 			mkdirp(archive_path, function(err) {
-				console.log(err);
+				console.log("Error creating folder: " + archive_path + " - " + err);
 				callback(err, null);
 				return;
 			});
             mkdirp(new_cdf_path, function(err) {
-				console.log(err);
+				console.log("Error creating folder: " + new_cdf_path + " - " + err);
 				callback(err, null);
 				return;
 			});
-            copyFile(cdf.schemaUri, archive_schema_path);
-            copyFile(wiki_template_file_name, new_cdf_path + "/index.html");
+            copyFile(cdf.schemaUri, archive_schema_path, function(err) {
+                if (err) {
+                  console.log("Error archiving wiki to: " + archive_schema_path + " - " + err);
+                  callback(err, null);
+                  return;
+                } else {
+                  console.log("Wiki created at " + new_cdf_path);
+                }
+            });
+            copyFile(wiki_template_file_name, new_cdf_path + "/index.html", function(err) {
+                if (err) {
+                  console.log("Error creating new wiki at: " + new_cdf_path + " - " + err);
+                  callback(err, null);
+                  return;
+                } else {
+                  console.log("Wiki created at " + new_cdf_path);
+                }
+            });
             rimraf(cdf.uri, function(err) {
-				console.log(err);
-				callback(err, null);
-				return;
+                if (err) {
+                    console.log("Error removing current version folder: " + err);
+                    callback(err, null);
+                    return;
+                } else {
+                    console.log("Removed current version folder");
+                }
 			});
 			cdf.archived[cdf.version] = new Object();
 			cdf.archived[cdf.version].title = cdf.title;
@@ -219,6 +239,25 @@ http.createServer(function (request, response) {
 						return;
 					} else {
 						console.log("Adding CDF succeeded - " + result);
+						console.log("Redirecting to Home Page...");
+						response.writeHead(302, {
+							'Location': '/'
+						});
+						response.end();
+						return;
+					}
+				});
+			} else if (url === '/forms/update-cdf-version.html') {
+				changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, function (err, result) {
+					if (err) {
+						response.writeHead(500, {
+						"Content-Type" : "text/plain"
+						});
+						response.write("500: Internal Error while changing CDF version - " + err + "\n");
+						response.end();
+						return;
+					} else {
+						console.log("Reversioning CDF succeeded - " + result);
 						console.log("Redirecting to Home Page...");
 						response.writeHead(302, {
 							'Location': '/'
