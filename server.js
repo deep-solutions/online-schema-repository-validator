@@ -12,22 +12,26 @@ var http = require("http"),
 	fs = require("fs"),
 	querystring = require("querystring"),
 	mkdirp = require("mkdirp"),
-	port = process.argv[2] || 8888;
+    rimraf = require("rimraf"),
+	port = process.argv[2] || 8888,
+    site_root = process.cwd() + "/site-prototype",
+    json_file_name = site_root + "/data/cdf_list.json",
+    wiki_template_file_name = site_root + "/templates/cdf/index.html";
 
-function isEmptyObject(obj) {
-	return !Object.keys(obj).length;
+function copyFile(path1, path2) {
+	fs.createReadStream(site_root + path1).pipe(fs.createWriteStream(site_root + path2));
 }
 
 function processPost(request, response, callback) {
-	var queryData = "";
+	var query_data = "";
 	if (typeof callback !== 'function')
 		return null;
 
 	if (request.method === 'POST') {
 		request.on('data', function (data) {
-			queryData += data;
-			if (queryData.length > 1e6) {
-				queryData = "";
+			query_data += data;
+			if (query_data.length > 1e6) {
+				query_data = "";
 				response.writeHead(413, {
 					'Content-Type' : 'text/plain'
 				});
@@ -38,7 +42,7 @@ function processPost(request, response, callback) {
 		});
 
 		request.on('end', function () {
-			request.post = querystring.parse(queryData);
+			request.post = querystring.parse(query_data);
 			callback(request.post, request.url);
 		});
 
@@ -51,9 +55,8 @@ function processPost(request, response, callback) {
 	}
 }
 
-function addCDFEntry(name, version, schematype, callback) {
-	var jsonfilename = process.cwd() + "/site-prototype/data/cdf_list.json";
-	var cdf_list = require(jsonfilename);
+function addCDFEntry(name, version, schema_type, callback) {
+	var cdf_list = require(json_file_name);
 	var max_id = 0;
 	if (typeof callback !== 'function')
 		return null;
@@ -72,37 +75,58 @@ function addCDFEntry(name, version, schematype, callback) {
 		}
 	}
 	// Add new entry to file
+    var new_cdf_path = "/data/current/schemas/" + name + "/" + version;
+    // Create the new path
+    mkdirp(new_cdf_path, function(err) {
+        console.log(err);
+        callback(err, null);
+        return;
+    });
 	cdf_list[new_cdf_key] = new Object();
 	cdf_list[new_cdf_key].id = max_id + 1;
 	cdf_list[new_cdf_key].title = name;
 	cdf_list[new_cdf_key].version = version;
-	cdf_list[new_cdf_key].uri = "/data/current/schemas/" + name + "/" + version;
-	cdf_list[new_cdf_key].schemaType = schematype;
+	cdf_list[new_cdf_key].uri = new_cdf_path;
+	cdf_list[new_cdf_key].schemaType = schema_type;
 	cdf_list[new_cdf_key].schemaUri = "";
 	cdf_list[new_cdf_key].archived = new Object();
-	fs.writeFile(jsonfilename, JSON.stringify(cdf_list, null, 4), function(err) {
+	fs.writeFile(json_file_name, JSON.stringify(cdf_list, null, 4), function(err) {
 		if (err) {
 		  console.log(err);
 		  callback(err, null);
 		} else {
-		  console.log("JSON saved to " + jsonfilename);
+		  console.log("JSON saved to " + json_file_name);
 		  callback(null, "OK");
 		}
 	});
 }
 
-function addNewCDFVersion(name, version, schematype, callback) {
-	var jsonfilename = process.cwd() + "/site-prototype/data/cdf_list.json";
-	var cdf_list = require(jsonfilename);
+function addNewCDFVersion(name, version, schema_type, callback) {
+	var cdf_list = require(json_file_name);
 	if (typeof callback !== 'function')
 		return null;
 	for (var cdf_key in cdf_list) {
 		if (cdf_key.toLowerCase() === name.toLowerCase()) {
 			// Archival process
-			var cdf = cdf_list[cdf_key];
+			var cdf = cdf_list[cdf_key],
+                archive_path = "/data/archive/schemas/" + name + "/" + cdf.version,
+                archive_schema_path = archive_path + "/" + path.basename(cdf.schemaUri),
+                new_cdf_path = "/data/current/schemas/" + name + "/" + version,
+                new_schema_path = cdf.schemaUri;
 			console.log("Changing " + name + " version from " + cdf.version + " to " + version);
-			var archive_path = "/data/current/schemas/" + name + "/" + cdf.version;
 			mkdirp(archive_path, function(err) {
+				console.log(err);
+				callback(err, null);
+				return;
+			});
+            mkdirp(new_cdf_path, function(err) {
+				console.log(err);
+				callback(err, null);
+				return;
+			});
+            copyFile(cdf.schemaUri, archive_schema_path);
+            copyFile(wiki_template_file_name, new_cdf_path + "/index.html");
+            rimraf(cdf.uri, function(err) {
 				console.log(err);
 				callback(err, null);
 				return;
@@ -111,8 +135,12 @@ function addNewCDFVersion(name, version, schematype, callback) {
 			cdf.archived[cdf.version].title = cdf.title;
 			cdf.archived[cdf.version].version = cdf.version;
 			cdf.archived[cdf.version].uri = archive_path;
-			cdf.archived[cdf.version].schemaType = schematype;
-			cdf.archived[cdf.version].schemaUri = archive_path + "/default.xsd";
+			cdf.archived[cdf.version].schemaType = cdf.schemaType;
+			cdf.archived[cdf.version].schemaUri = archive_schema_path;
+            cdf.version = version;
+            cdf.uri = new_cdf_path;
+            cdf.schemaType = schema_type;
+            cdf.schemaUri = new_schema_path;
 			break;
 		}
 	}
@@ -121,7 +149,7 @@ function addNewCDFVersion(name, version, schematype, callback) {
 http.createServer(function (request, response) {
 
 	var uri = url.parse(request.url).pathname,
-	filename = path.join(process.cwd() + "/site-prototype", uri);
+        filename = path.join(site_root, uri);
 
 	if (request.method === "POST") {
 		console.log("Got a POST request");

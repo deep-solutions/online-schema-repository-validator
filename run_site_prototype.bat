@@ -1,12 +1,14 @@
 @echo off
 
-rem ensure node.js and sqlite3 are in %path%
+rem ensure node.js is in %path%
 rem change the below command to refer to your node.js path (unless it is already present)
-set path=./node_js;../node_js;../../node_js;../../node_js;%path%
+if exist ../../node_js set path="%path%;../../node_js"
+
+rem echo "path is %path%"
 
 where /q node || echo node.js not found! && goto :error
 
-rem ensure required npm modules are present, e.g. sqlite3
+rem ensure required npm modules are present
 
 rem start the server
 node server.js
