@@ -1,87 +1,50 @@
 /*********************************
-	Node.js Server Script
-	Author: Deep Bhattacharya
-	Version: 0.1
-	Date: 08-10-2015
-*********************************/
-
+Node.js Server Script
+Author: Deep Bhattacharya
+Version: 0.1
+Date: 08-10-2015
+ *********************************/
 
 var http = require("http"),
-	url = require("url"),
-	path = require("path"),
-	fs = require("fs"),
-	querystring = require("querystring"),
-	mkdirp = require("mkdirp"),
-    rimraf = require("rimraf"),
-	port = process.argv[2] || 8888,
-    site_root = process.cwd() + "/site-prototype",
-    json_file_name = site_root + "/data/cdf_list.json",
-    wiki_template_file_name = "/templates/cdf/index.html";
-
-function copyFile(path1, path2, callback) {
-	// fs.createReadStream().pipe(fs.createWriteStream());
-    var cb_called = false,
-        source = site_root + path1,
-        target = site_root + path2;
-
-    var rd = fs.createReadStream(source);
-    rd.on("error", function (err) {
-        done(err);
-    });
-    var wr = fs.createWriteStream(target);
-    wr.on("error", function (err) {
-        done(err);
-    });
-    wr.on("close", function (ex) {
-        done();
-    });
-    rd.pipe(wr);
-
-    function done(err) {
-        if (!cb_called) {
-            console.log(err);
-            callback(err);
-            cb_called = true;
-        }
-    }
-}
-
-function createFolder(new_dir, callback) {
-    mkdirp.sync(site_root + new_dir, function(err) {
-        if (err) {
-		  console.log(err);
-		  callback(err);
-		} else {
-		  console.log("Path created: " + new_dir);
-		  callback(null);
-		}
-    });
-}
+url = require("url"),
+path = require("path"),
+fse = require("fs-extra"),
+fs = require("fs"),
+querystring = require("querystring"),
+mkdirp = require("mkdirp"),
+rimraf = require("rimraf"),
+formidable = require("formidable"),
+port = process.argv[2] || 8888,
+site_root = process.cwd() + "/site-prototype",
+json_file_name = site_root + "/data/cdf_list.json",
+wiki_template_file_name = "/templates/cdf/index.html";
 
 function processPost(request, response, callback) {
-	var query_data = "";
 	if (typeof callback !== 'function')
 		return null;
 
 	if (request.method === 'POST') {
-		request.on('data', function (data) {
-			query_data += data;
-			if (query_data.length > 1e6) {
-				query_data = "";
-				response.writeHead(413, {
-					'Content-Type' : 'text/plain'
+		// Instantiate a new formidable form for processing
+		var form = new formidable.IncomingForm();
+
+		// form.parse analyzes the incoming stream data, picking apart the different fields and files
+		form.parse(request, function (err, fields, files) {
+			// console.log(fields);
+			// console.log(files);
+			if (err) {
+				console.error(err.message);
+				response.writeHead(500, {
+					"Content-Type" : "text/plain"
 				});
-				response.write("413: Request Entity Too Large");
+				response.write("500: Internal Error - " + err.message + "\n");
 				response.end();
-				request.connection.destroy();
+				return;
 			}
+			post = fields;
+			post.cdf_file_path = files.cdf_file.path;
+			post.cdf_file_name = files.cdf_file.name;
+			callback(post, request.url);
 		});
-
-		request.on('end', function () {
-			request.post = querystring.parse(query_data);
-			callback(request.post, request.url);
-		});
-
 	} else {
 		response.writeHead(405, {
 			'Content-Type' : 'text/plain'
@@ -91,13 +54,15 @@ function processPost(request, response, callback) {
 	}
 }
 
-function addCDFEntry(name, version, schema_type, callback) {
-	var cdf_list = require(json_file_name);
-	var max_id = 0;
+function addCDFEntry(name, version, schema_type, cdf_file_path, cdf_file_name, callback) {
+	var cdf_list = require(json_file_name),
+	max_id = 0;
 	if (typeof callback !== 'function')
 		return null;
 	// console.log("Loop through CDF list");
-	var new_cdf_key = name.toLowerCase();
+	var new_cdf_key = name.toLowerCase(),
+	new_cdf_path = "/data/current/schemas/" + name + "/" + version,
+	new_schema_path = "/data/current/schemas/" + name + "/" + cdf_file_name;
 	if (cdf_list[cdf_key] != null) {
 		err = "CDF with name " + new_cdf_key + " already exists!";
 		console.log(err);
@@ -110,47 +75,57 @@ function addCDFEntry(name, version, schema_type, callback) {
 			max_id = cdf_list[cdf_key].id;
 		}
 	}
-	// Add new entry to file
-    var new_cdf_path = "/data/current/schemas/" + name + "/" + version;
-    // Create the new path
-    createFolder(new_cdf_path, function(err) {
+	// Create the new path
+	fse.mkdirs(site_root + new_cdf_path, function (err) {
 		if (err) {
-		  console.log("Error creating folder: " + err);
-		  callback(err, null);
-          return;
+			console.log("Error creating folder: " + err);
+			callback(err, null);
+			return;
 		} else {
-		  console.log("Folder created at " + new_cdf_path);
+			console.log("Folder created at " + new_cdf_path);
+			// Create wiki
+			fse.copy(site_root + wiki_template_file_name, site_root + new_cdf_path + "/index.html", function (err) {
+				if (err) {
+					console.log("Error creating wiki: " + err);
+					callback(err, null);
+					return;
+				} else {
+					console.log("Wiki created at " + new_cdf_path);
+					// Create schema file
+					fse.copy(cdf_file_path, site_root + new_schema_path, function (err) {
+						if (err) {
+							console.log("Error saving file: " + err);
+							callback(err, null);
+							return;
+						} else {
+							console.log("File saved at " + new_schema_path);
+							// Add entry in JSON
+							cdf_list[new_cdf_key] = new Object();
+							cdf_list[new_cdf_key].id = max_id + 1;
+							cdf_list[new_cdf_key].title = name;
+							cdf_list[new_cdf_key].version = version;
+							cdf_list[new_cdf_key].uri = new_cdf_path;
+							cdf_list[new_cdf_key].schemaType = schema_type;
+							cdf_list[new_cdf_key].schemaUri = new_schema_path;
+							cdf_list[new_cdf_key].archived = new Object();
+							fs.writeFile(json_file_name, JSON.stringify(cdf_list, null, 4), function (err) {
+								if (err) {
+									console.log(err);
+									callback(err, null);
+									return;
+								} else {
+									console.log("JSON saved to " + json_file_name);
+									callback(null, "OK");
+                                    return;
+								}
+							});
+						}
+					});
+				}
+			});
 		}
 	});
-    // Create wiki
-    copyFile(wiki_template_file_name, new_cdf_path + "/index.html", function(err) {
-		if (err) {
-		  console.log("Error creating wiki: " + err);
-		  callback(err, null);
-          return;
-		} else {
-		  console.log("Wiki created at " + new_cdf_path);
-		}
-	});
-	cdf_list[new_cdf_key] = new Object();
-	cdf_list[new_cdf_key].id = max_id + 1;
-	cdf_list[new_cdf_key].title = name;
-	cdf_list[new_cdf_key].version = version;
-	cdf_list[new_cdf_key].uri = new_cdf_path;
-	cdf_list[new_cdf_key].schemaType = schema_type;
-	cdf_list[new_cdf_key].schemaUri = "";
-	cdf_list[new_cdf_key].archived = new Object();
-	fs.writeFile(json_file_name, JSON.stringify(cdf_list, null, 4), function(err) {
-		if (err) {
-		  console.log(err);
-		  callback(err, null);
-          return;
-		} else {
-		  console.log("JSON saved to " + json_file_name);
-		}
-	});
-    
-    callback(null, "OK");
+
 }
 
 function changeCDFVersion(name, version, schema_type, callback) {
@@ -161,47 +136,47 @@ function changeCDFVersion(name, version, schema_type, callback) {
 		if (cdf_key.toLowerCase() === name.toLowerCase()) {
 			// Archival process
 			var cdf = cdf_list[cdf_key],
-                archive_path = "/data/archive/schemas/" + name + "/" + cdf.version,
-                archive_schema_path = archive_path + "/" + path.basename(cdf.schemaUri),
-                new_cdf_path = "/data/current/schemas/" + name + "/" + version,
-                new_schema_path = cdf.schemaUri;
+			archive_path = "/data/archive/schemas/" + name + "/" + cdf.version,
+			archive_schema_path = archive_path + "/" + path.basename(cdf.schemaUri),
+			new_cdf_path = "/data/current/schemas/" + name + "/" + version,
+			new_schema_path = cdf.schemaUri;
 			console.log("Changing " + name + " version from " + cdf.version + " to " + version);
-			mkdirp(archive_path, function(err) {
+			fse.mkdirs(archive_path, function (err) {
 				console.log("Error creating folder: " + archive_path + " - " + err);
 				callback(err, null);
 				return;
 			});
-            mkdirp(new_cdf_path, function(err) {
+			fse.mkdirs(new_cdf_path, function (err) {
 				console.log("Error creating folder: " + new_cdf_path + " - " + err);
 				callback(err, null);
 				return;
 			});
-            copyFile(cdf.schemaUri, archive_schema_path, function(err) {
-                if (err) {
-                  console.log("Error archiving wiki to: " + archive_schema_path + " - " + err);
-                  callback(err, null);
-                  return;
-                } else {
-                  console.log("Wiki created at " + new_cdf_path);
-                }
-            });
-            copyFile(wiki_template_file_name, new_cdf_path + "/index.html", function(err) {
-                if (err) {
-                  console.log("Error creating new wiki at: " + new_cdf_path + " - " + err);
-                  callback(err, null);
-                  return;
-                } else {
-                  console.log("Wiki created at " + new_cdf_path);
-                }
-            });
-            rimraf(cdf.uri, function(err) {
-                if (err) {
-                    console.log("Error removing current version folder: " + err);
-                    callback(err, null);
-                    return;
-                } else {
-                    console.log("Removed current version folder");
-                }
+			fse.copy(site_root + cdf.schemaUri, site_root + archive_schema_path, function (err) {
+				if (err) {
+					console.log("Error archiving wiki to: " + archive_schema_path + " - " + err);
+					callback(err, null);
+					return;
+				} else {
+					console.log("Wiki created at " + new_cdf_path);
+				}
+			});
+			fse.copy(site_root + wiki_template_file_name, site_root + new_cdf_path + "/index.html", function (err) {
+				if (err) {
+					console.log("Error creating new wiki at: " + new_cdf_path + " - " + err);
+					callback(err, null);
+					return;
+				} else {
+					console.log("Wiki created at " + new_cdf_path);
+				}
+			});
+			fse.remove(cdf.uri, function (err) {
+				if (err) {
+					console.log("Error removing current version folder: " + err);
+					callback(err, null);
+					return;
+				} else {
+					console.log("Removed current version folder");
+				}
 			});
 			cdf.archived[cdf.version] = new Object();
 			cdf.archived[cdf.version].title = cdf.title;
@@ -209,10 +184,10 @@ function changeCDFVersion(name, version, schema_type, callback) {
 			cdf.archived[cdf.version].uri = archive_path;
 			cdf.archived[cdf.version].schemaType = cdf.schemaType;
 			cdf.archived[cdf.version].schemaUri = archive_schema_path;
-            cdf.version = version;
-            cdf.uri = new_cdf_path;
-            cdf.schemaType = schema_type;
-            cdf.schemaUri = new_schema_path;
+			cdf.version = version;
+			cdf.uri = new_cdf_path;
+			cdf.schemaType = schema_type;
+			cdf.schemaUri = new_schema_path;
 			break;
 		}
 	}
@@ -221,18 +196,19 @@ function changeCDFVersion(name, version, schema_type, callback) {
 http.createServer(function (request, response) {
 
 	var uri = url.parse(request.url).pathname,
-        filename = path.join(site_root, uri);
+	filename = path.join(site_root, uri);
 
 	if (request.method === "POST") {
 		console.log("Got a POST request");
-		processPost(request, response, function(post, url) {
+		processPost(request, response, function (post, url) {
 			console.log("Processing POST request");
-			// console.log(post);
+			console.log(post);
 			if (url === '/forms/add-new-cdf.html') {
-				addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, function (err, result) {
+				addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
 					if (err) {
+						console.log("Adding CDF failed - " + err);
 						response.writeHead(500, {
-						"Content-Type" : "text/plain"
+							"Content-Type" : "text/plain"
 						});
 						response.write("500: Internal Error while adding CDF - " + err + "\n");
 						response.end();
@@ -241,7 +217,7 @@ http.createServer(function (request, response) {
 						console.log("Adding CDF succeeded - " + result);
 						console.log("Redirecting to Home Page...");
 						response.writeHead(302, {
-							'Location': '/'
+							'Location' : '/'
 						});
 						response.end();
 						return;
@@ -251,7 +227,7 @@ http.createServer(function (request, response) {
 				changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, function (err, result) {
 					if (err) {
 						response.writeHead(500, {
-						"Content-Type" : "text/plain"
+							"Content-Type" : "text/plain"
 						});
 						response.write("500: Internal Error while changing CDF version - " + err + "\n");
 						response.end();
@@ -260,14 +236,14 @@ http.createServer(function (request, response) {
 						console.log("Reversioning CDF succeeded - " + result);
 						console.log("Redirecting to Home Page...");
 						response.writeHead(302, {
-							'Location': '/'
+							'Location' : '/'
 						});
 						response.end();
 						return;
 					}
 				});
 			}
-		});		
+		});
 	} else if (request.method === "GET") {
 		fs.exists(filename, function (exists) {
 			if (!exists) {

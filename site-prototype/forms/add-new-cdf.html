@@ -8,7 +8,7 @@
     <meta charset="utf-8">
 	
 	<div class="form-content">
-		<form class="form-basic" method="post" action="#">
+		<form class="form-basic" method="post" action="#" enctype="multipart/form-data">
 			<div class="form-title-row">
                 <h1>Add New CDF</h1>
             </div>
@@ -32,6 +32,12 @@
 						<option>XSD</option>
 						<option>JSON Schema</option>
 					</select>
+				</label>
+			</div>
+            <div class="form-row">
+				<label>
+					<span>File</span>
+					<input type="file" name="cdf_file"/>
 				</label>
 			</div>
 			<div class="form-row">
