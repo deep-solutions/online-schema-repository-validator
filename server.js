@@ -3,7 +3,7 @@ Node.js Server Script
 Author: Deep Bhattacharya
 Version: 0.10
 Date: 08-10-2015
- *********************************/
+**********************************/
 
 var http = require("http"),
 url = require("url"),
@@ -122,7 +122,6 @@ function addCDFEntry(name, version, schema_type, cdf_file_path, cdf_file_name, c
 			});
 		}
 	});
-
 }
 
 function changeCDFVersion(name, version, schema_type, cdf_file_path, cdf_file_name, callback) {
@@ -235,47 +234,51 @@ http.createServer(function (request, response) {
 	if (request.method === "POST") {
 		console.log("Got a POST request");
 		processPost(request, response, function (post, url) {
-			console.log("Processing POST request");
-			console.log(post);
-			if (url === '/forms/add-new-cdf.html') {
-				addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
-					if (err) {
-						console.log("Adding CDF failed - " + err);
-						response.writeHead(500, {
-							"Content-Type" : "text/plain"
-						});
-						response.write("500: Internal Error while adding CDF - " + err + "\n");
-						response.end();
-						return;
-					} else {
-						console.log("Adding CDF succeeded - " + result);
-						console.log("Redirecting to Home Page...");
-						response.writeHead(302, {
-							'Location' : '/'
-						});
-						response.end();
-						return;
-					}
-				});
-			} else if (url === '/forms/change-cdf-version.html') {
-				changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
-					if (err) {
-						response.writeHead(500, {
-							"Content-Type" : "text/plain"
-						});
-						response.write("500: Internal Error while changing CDF version - " + err + "\n");
-						response.end();
-						return;
-					} else {
-						console.log("Reversioning CDF succeeded - " + result);
-						console.log("Redirecting to Home Page...");
-						response.writeHead(302, {
-							'Location' : '/'
-						});
-						response.end();
-						return;
-					}
-				});
+			console.log("Processing POST request body");
+			// console.log(post);
+			switch (url) {
+				case '/forms/add-new-cdf.html':
+					addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
+						if (err) {
+							console.log("Adding CDF failed - " + err);
+							response.writeHead(500, {
+								"Content-Type" : "text/plain"
+							});
+							response.write("500: Internal Error while adding CDF - " + err + "\n");
+							response.end();
+							return;
+						} else {
+							console.log("Adding CDF succeeded - " + result);
+							console.log("Redirecting to Home Page...");
+							response.writeHead(302, {
+								'Location' : '/'
+							});
+							response.end();
+							return;
+						}
+					});
+				break;
+				
+				case '/forms/change-cdf-version.html':
+					changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
+						if (err) {
+							response.writeHead(500, {
+								"Content-Type" : "text/plain"
+							});
+							response.write("500: Internal Error while changing CDF version - " + err + "\n");
+							response.end();
+							return;
+						} else {
+							console.log("Reversioning CDF succeeded - " + result);
+							console.log("Redirecting to Home Page...");
+							response.writeHead(302, {
+								'Location' : '/'
+							});
+							response.end();
+							return;
+						}
+					});
+				break;
 			}
 		});
 	} else if (request.method === "GET") {
