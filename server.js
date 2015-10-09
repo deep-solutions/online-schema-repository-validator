@@ -6,15 +6,15 @@ Date: 08-10-2015
  *********************************/
 
 var http = require("http"),
-	url = require("url"),
-	path = require("path"),
-	fs = require("fs"),
-	fse = require("fs-extra"),
-	formidable = require("formidable"),
-	port = process.argv[2] || 8888,
-	site_root = process.cwd() + "/site-prototype",
-	json_file_name = site_root + "/data/cdf_list.json",
-	wiki_template_file_name = "/templates/cdf/index.html";
+url = require("url"),
+path = require("path"),
+fs = require("fs"),
+fse = require("fs-extra"),
+formidable = require("formidable"),
+port = process.argv[2] || 8888,
+site_root = process.cwd() + "/site-prototype",
+json_file_name = site_root + "/data/cdf_list.json",
+wiki_template_file_name = "/templates/cdf/index.html";
 
 function processPost(request, response, callback) {
 	if (typeof callback !== 'function')
@@ -133,10 +133,10 @@ function changeCDFVersion(name, version, schema_type, cdf_file_path, cdf_file_na
 		if (cdf_key.toLowerCase() === name.toLowerCase()) {
 			// Archival process
 			var cdf = cdf_list[cdf_key],
-				archive_path = "/data/archive/schemas/" + name + "/" + cdf.version,
-				archive_schema_path = archive_path + "/" + path.basename(cdf.schemaUri),
-				new_cdf_path = "/data/current/schemas/" + name + "/" + version,
-				new_schema_path = cdf.schemaUri; // Unchanged
+			archive_path = "/data/archive/schemas/" + name + "/" + cdf.version,
+			archive_schema_path = archive_path + "/" + path.basename(cdf.schemaUri),
+			new_cdf_path = "/data/current/schemas/" + name + "/" + version,
+			new_schema_path = cdf.schemaUri; // Unchanged
 			console.log("Changing " + name + " version from " + cdf.version + " to " + version);
 			fse.mkdirs(site_root + archive_path, function (err) {
 				if (err) {
@@ -158,7 +158,7 @@ function changeCDFVersion(name, version, schema_type, cdf_file_path, cdf_file_na
 									callback(err, null);
 									return;
 								} else {
-									console.log("Schema archived to " + new_cdf_path);
+									console.log("Schema file archived to " + new_cdf_path);
 									fse.copy(site_root + cdf.uri + "/index.html", site_root + new_cdf_path + "/index.html", function (err) {
 										if (err) {
 											console.log("Error creating new wiki at: " + new_cdf_path + " - " + err);
@@ -166,39 +166,48 @@ function changeCDFVersion(name, version, schema_type, cdf_file_path, cdf_file_na
 											return;
 										} else {
 											console.log("Wiki created at " + new_cdf_path);
-											fse.remove(site_root + cdf.uri, function (err) {
+											fse.copy(site_root + cdf.uri + "/index.html", site_root + archive_path + "/index.html", function (err) {
 												if (err) {
-													console.log("Error removing current version folder: " + err);
+													console.log("Error archiving wiki to: " + archive_path + " - " + err);
 													callback(err, null);
 													return;
 												} else {
-													fse.copy(cdf_file_path, site_root + new_schema_path, function (err) {
+													console.log("Wiki archived to " + archive_path);
+													fse.remove(site_root + cdf.uri, function (err) {
 														if (err) {
-															console.log("Error saving file: " + err);
+															console.log("Error removing current version folder: " + err);
 															callback(err, null);
 															return;
 														} else {
-															console.log("File saved at " + new_schema_path);
-															console.log("Removed current version folder");
-															cdf.archived[cdf.version] = new Object();
-															cdf.archived[cdf.version].title = cdf.title;
-															cdf.archived[cdf.version].version = cdf.version;
-															cdf.archived[cdf.version].uri = archive_path;
-															cdf.archived[cdf.version].schemaType = cdf.schemaType;
-															cdf.archived[cdf.version].schemaUri = archive_schema_path;
-															cdf.version = version;
-															cdf.uri = new_cdf_path;
-															cdf.schemaType = schema_type;
-															cdf.schemaUri = new_schema_path;
-															fs.writeFile(json_file_name, JSON.stringify(cdf_list, null, 4), function (err) {
+															console.log("Current version folder deleted: " + cdf.uri);
+															fse.copy(cdf_file_path, site_root + new_schema_path, function (err) {
 																if (err) {
-																	console.log(err);
+																	console.log("Error saving schema file: " + err);
 																	callback(err, null);
 																	return;
 																} else {
-																	console.log("JSON saved to " + json_file_name);
-																	callback(null, "OK");
-																	return;
+																	console.log("Schema file saved at " + new_schema_path);
+																	cdf.archived[cdf.version] = new Object();
+																	cdf.archived[cdf.version].title = cdf.title;
+																	cdf.archived[cdf.version].version = cdf.version;
+																	cdf.archived[cdf.version].uri = archive_path;
+																	cdf.archived[cdf.version].schemaType = cdf.schemaType;
+																	cdf.archived[cdf.version].schemaUri = archive_schema_path;
+																	cdf.version = version;
+																	cdf.uri = new_cdf_path;
+																	cdf.schemaType = schema_type;
+																	cdf.schemaUri = new_schema_path;
+																	fs.writeFile(json_file_name, JSON.stringify(cdf_list, null, 4), function (err) {
+																		if (err) {
+																			console.log(err);
+																			callback(err, null);
+																			return;
+																		} else {
+																			console.log("JSON saved to " + json_file_name);
+																			callback(null, "OK");
+																			return;
+																		}
+																	});
 																}
 															});
 														}
