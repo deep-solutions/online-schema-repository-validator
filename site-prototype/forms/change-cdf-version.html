@@ -3,12 +3,12 @@
 
   <head>
 
-  	<title>Change Version of  Common Data Format</title>
+  	<title>Change Version of Common Data Format</title>
 	<link rel="stylesheet" href="/css/form-basic.css">
     <meta charset="utf-8">
 	
 	<div class="form-content">
-		<form class="form-basic" method="post" action="#">
+		<form class="form-basic" method="post" action="#" enctype="multipart/form-data">
 			<div class="form-title-row">
                 <h1>Change CDF Version</h1>
             </div>
@@ -34,8 +34,14 @@
 					</select>
 				</label>
 			</div>
+            <div class="form-row">
+				<label>
+					<span>File</span>
+					<input type="file" name="cdf_file"/>
+				</label>
+			</div>
 			<div class="form-row">
-                <button type="submit">Add CDF</button>
+                <button type="submit">New Version</button>
             </div>
 		</form>
 	</div>

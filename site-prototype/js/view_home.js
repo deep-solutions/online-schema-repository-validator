@@ -5,13 +5,11 @@ $(document).ready(function () {
 		var result = JSON.parse(response);
 		// alert(result);
 		$.each(result, function () {
-			if (this.archived == 'true')
-				return;
 			var li = $('<li/>')
 				.appendTo(cdf_list);
 			var a = $('<a/>')
 				.attr('href', this.uri)
-				.text(this.title)
+				.text(this.title + " (v" + this.version + ")")
 				.appendTo(li);
 		});
 	});
