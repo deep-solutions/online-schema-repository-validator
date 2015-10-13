@@ -75,14 +75,14 @@ window.onload = function () {
 			type: "column", //change it to line, area, bar, pie, etc
 			axisYType: "secondary",
 			dataPoints: [
-				{ x: -1, y: 10 },
-				{ x: -2, y: 11 },
-				{ x: -3, y: 14 },
-				{ x: -4, y: 16 },
-				{ x: -5, y: 19 },
-				{ x: -6, y: 15 },
-				{ x: -7, y: 14 },
-				{ x: -8, y: 16 }
+				{ x: -1, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -2, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -3, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -4, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -5, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -6, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -7, y: (Math.floor(Math.random() * 5 + 10)) },
+				{ x: -8, y: (Math.floor(Math.random() * 5 + 10)) }
 			]
 		}
 		]
