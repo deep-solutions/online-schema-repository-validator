@@ -18,7 +18,7 @@
     <h1>Common Data Format - <span id="cdf_name"></span></h1>
     <h2>CDF Version: <span id="cdf_version"></span></h2>
     <p>This is a prototype wiki page.</p>
-	<p>Schema is <span id="cdf_address"><a href="#" id="cdf_link">here</a></span></p>
+	<p>Schema is <span id="cdf_address"><a href="#">here</a></span></p>
     
     <p>Validate a sample file here.</p>
     
@@ -34,7 +34,10 @@
 				</label>
 			</div>
             <div class="form-row">
-				<input type="hidden" name="cdf_address_validate" value=""/>
+				<label>
+					<span>Schema File</span>
+					<input type="text" id="cdf_link" name="cdf_uri" readonly/>
+				</label>
 			</div>
 			<div class="form-row">
                 <button type="submit">Validate</button>

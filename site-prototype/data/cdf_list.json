@@ -7,22 +7,5 @@
         "schemaType": "XSD",
         "schemaUri": "/data/current/schemas/Article/Article.xsd",
         "archived": {}
-    },
-    "order": {
-        "id": 2,
-        "title": "Order",
-        "version": "0.2",
-        "uri": "/data/current/schemas/Order/0.2",
-        "schemaType": "XSD",
-        "schemaUri": "/data/current/schemas/Order/Order.xsd",
-        "archived": {
-            "0.1": {
-                "title": "Order",
-                "version": "0.1",
-                "uri": "/data/archive/schemas/Order/0.1",
-                "schemaType": "XSD",
-                "schemaUri": "/data/archive/schemas/Order/0.1/Order.xsd"
-            }
-        }
     }
 }

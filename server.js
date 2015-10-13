@@ -6,28 +6,28 @@ Date: 08-10-2015
 **********************************/
 
 var http = require("http"),
-url = require("url"),
-path = require("path"),
-fs = require("fs"),
-fse = require("fs-extra"),
-formidable = require("formidable"),
-port = process.argv[2] || 8888,
-site_root = process.cwd() + "/site-prototype",
-json_file_name = site_root + "/data/cdf_list.json",
-wiki_template_file_name = "/templates/cdf/index.html";
+	url = require("url"),
+	path = require("path"),
+	fs = require("fs"),
+	fse = require("fs-extra"),
+	formidable = require("formidable"),
+	port = process.argv[2] || 8888,
+	site_root = process.cwd() + "/site-prototype",
+	json_file_name = site_root + "/data/cdf_list.json",
+	wiki_template_file_name = "/templates/cdf/index.html";
 
 function processPost(request, response, callback) {
-	if (typeof callback !== 'function')
+	if (typeof callback !== "function")
 		return null;
 
-	if (request.method === 'POST') {
+	if (request.method === "POST") {
 		// Instantiate a new formidable form for processing
 		var form = new formidable.IncomingForm();
 
 		// form.parse analyzes the incoming stream data, picking apart the different fields and files
 		form.parse(request, function (err, fields, files) {
-			// console.log(fields);
-			// console.log(files);
+			console.log(fields);
+			console.log(files);
 			if (err) {
 				console.error(err.message);
 				response.writeHead(500, {
@@ -44,7 +44,7 @@ function processPost(request, response, callback) {
 		});
 	} else {
 		response.writeHead(405, {
-			'Content-Type' : 'text/plain'
+			"Content-Type" : "text/plain"
 		});
 		response.write("405: Method Not Supported - Function processPost() Only Handles POST Requests");
 		response.end();
@@ -54,7 +54,7 @@ function processPost(request, response, callback) {
 function addCDFEntry(name, version, schema_type, cdf_file_path, cdf_file_name, callback) {
 	var cdf_list = require(json_file_name),
 	max_id = 0;
-	if (typeof callback !== 'function')
+	if (typeof callback !== "function")
 		return null;
 	// console.log("Loop through CDF list");
 	var new_cdf_key = name.toLowerCase(),
@@ -126,7 +126,7 @@ function addCDFEntry(name, version, schema_type, cdf_file_path, cdf_file_name, c
 
 function changeCDFVersion(name, version, schema_type, cdf_file_path, cdf_file_name, callback) {
 	var cdf_list = require(json_file_name);
-	if (typeof callback !== 'function')
+	if (typeof callback !== "function")
 		return null;
 	for (var cdf_key in cdf_list) {
 		if (cdf_key.toLowerCase() === name.toLowerCase()) {
@@ -228,16 +228,13 @@ function changeCDFVersion(name, version, schema_type, cdf_file_path, cdf_file_na
 
 http.createServer(function (request, response) {
 
-	var uri = url.parse(request.url).pathname,
-	filename = path.join(site_root, uri);
-
 	if (request.method === "POST") {
-		console.log("Got a POST request");
+		console.log("Got a POST request from URL: " + request.url);
 		processPost(request, response, function (post, url) {
 			console.log("Processing POST request body");
-			// console.log(post);
-			switch (url) {
-				case '/forms/add-new-cdf.html':
+			console.log(post);
+			switch (url.split("/").pop()) {
+				case "add-new-cdf.html":
 					addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.file_path, post.file_name, function (err, result) {
 						if (err) {
 							console.log("Adding CDF failed - " + err);
@@ -251,15 +248,16 @@ http.createServer(function (request, response) {
 							console.log("Adding CDF succeeded - " + result);
 							console.log("Redirecting to Home Page...");
 							response.writeHead(302, {
-								'Location' : '/'
+								"Location" : "/"
 							});
 							response.end();
+							console.log("Finished processing");
 							return;
 						}
 					});
 				break;
 				
-				case '/forms/change-cdf-version.html':
+				case "change-cdf-version.html":
 					changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.file_path, post.file_name, function (err, result) {
 						if (err) {
 							response.writeHead(500, {
@@ -272,15 +270,16 @@ http.createServer(function (request, response) {
 							console.log("Reversioning CDF succeeded - " + result);
 							console.log("Redirecting to Home Page...");
 							response.writeHead(302, {
-								'Location' : '/'
+								"Location" : "/"
 							});
 							response.end();
+							console.log("Finished processing");
 							return;
 						}
 					});
 				break;
                 
-                case '/validate':
+                case "validate":
                     var result = "Invalid";
                     console.log("Validating CDF succeeded - " + result);
                     response.writeHead(200, {
@@ -288,10 +287,14 @@ http.createServer(function (request, response) {
                     });
                     response.write(result);
                     response.end();
+					console.log("Finished processing");
                     return;
 			}
 		});
 	} else if (request.method === "GET") {
+		var uri = url.parse(request.url).pathname,
+			filename = path.join(site_root, uri);
+		
 		fs.exists(filename, function (exists) {
 			if (!exists) {
 				response.writeHead(404, {
@@ -303,7 +306,7 @@ http.createServer(function (request, response) {
 			}
 
 			if (fs.statSync(filename).isDirectory())
-				filename += '/index.html';
+				filename += "/index.html";
 
 			fs.readFile(filename, "binary", function (err, file) {
 				if (err) {
