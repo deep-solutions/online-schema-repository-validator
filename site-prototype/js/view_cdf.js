@@ -1,6 +1,6 @@
 $(document).ready(function () {
-	var current_path = window.location.pathname;
-	var jsonfilename = "/data/cdf_list.json";
+	var current_path = window.location.pathname,
+		jsonfilename = "/data/cdf_list.json";
 	// alert(current_path);
 	$.get(jsonfilename, function (response) {
 		var result = JSON.parse(response),
@@ -48,12 +48,46 @@ $(document).ready(function () {
 		});
 		return false;
 	});
-});
 
-$(function () {
 	$("#accordion").accordion({
 		collapsible : true,
 		autoHeight : true,
 		active : false
 	});
 });
+
+window.onload = function () {
+
+	//Better to construct options first and then pass it as a parameter
+	var options = {
+		title: {
+			text: "Runtime Statistics for " + $("#cdf_name").text(),
+		},
+		animationEnabled: true,
+		axisX: {
+			title: "Recent Interface Runs",
+		},
+		axisY2: {
+			title: "Interface Runtimes (ms)",
+		},
+		data: [
+		{
+			type: "column", //change it to line, area, bar, pie, etc
+			axisYType: "secondary",
+			dataPoints: [
+				{ x: -1, y: 10 },
+				{ x: -2, y: 11 },
+				{ x: -3, y: 14 },
+				{ x: -4, y: 16 },
+				{ x: -5, y: 19 },
+				{ x: -6, y: 15 },
+				{ x: -7, y: 14 },
+				{ x: -8, y: 16 }
+			]
+		}
+		]
+	};
+
+	$("#runstats").CanvasJSChart(options);
+
+}

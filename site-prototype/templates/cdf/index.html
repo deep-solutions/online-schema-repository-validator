@@ -6,10 +6,12 @@
   	<title>Common Data Format - </title>
     <link rel="stylesheet" href="/css/form-basic.css">
     <link rel="stylesheet" href="/css/default.css">
+	<link rel="stylesheet" href="/css/jquery-ui-1.11.4.min.css">
     <meta charset="utf-8">
 	
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script type="text/javascript" src="/js/xmllint.js"></script>
+	<script type="text/javascript" src="/js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="/js/jquery-ui-1.11.4.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.canvasjs-1.7.0.min.js"></script>
     <script type="text/javascript" src="/js/view_cdf.js"></script>
   </head>
 
@@ -17,34 +19,38 @@
 
     <h1>Common Data Format - <span id="cdf_name"></span></h1>
     <h2>CDF Version: <span id="cdf_version"></span></h2>
-    <p>This is a prototype wiki page.</p>
-	<p>Schema is <span id="cdf_address"><a href="#">here</a></span></p>
     
-    <p>Validate a sample file here.</p>
-    
-    <div class="form-content">
-		<form id="validate-cdf" class="form-basic" method="post" action="validate" enctype="multipart/form-data">
-			<div class="form-title-row">
-                <h1>Validate CDF</h1>
-            </div>
-            <div class="form-row">
-				<label>
-					<span>File</span>
-					<input type="file" name="attached_file"/>
-				</label>
-			</div>
-            <div class="form-row">
-				<label>
-					<span>Schema File</span>
-					<input type="text" id="cdf_link" name="cdf_uri" readonly/>
-				</label>
-			</div>
-			<div class="form-row">
-                <button type="submit">Validate</button>
-            </div>
-		</form>
-    </div>
-    
+	<p>Schema is <span id="cdf_address"><a href="#">here</a>.</span></p>
+	
+	<div id="accordion">
+		<h3>Document Validation against CDF Schema</h3>
+		<div class="form-content" id="validate">
+			<form id="validate-cdf" class="form-basic" method="post" action="validate" enctype="multipart/form-data">
+				<div class="form-title-row">
+					<h1>Validate CDF</h1>
+				</div>
+				<div class="form-row">
+					<label>
+						<span>File</span>
+						<input type="file" name="attached_file"/>
+					</label>
+				</div>
+				<div class="form-row">
+					<label>
+						<span>Schema File</span>
+						<input type="text" id="cdf_link" name="cdf_uri" readonly/>
+					</label>
+				</div>
+				<div class="form-row">
+					<button type="submit">Validate</button>
+				</div>
+			</form>
+		</div>
+		<h3>Recent Runtime Statistics Chart for the CDF Interface</h3>
+		<div id="runstats" style="width: 94%;">
+		</div>
+	</div>
+	
     <p>The CDF fields are described below.</p>
     
     <table style="width:100%">
