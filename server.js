@@ -38,8 +38,8 @@ function processPost(request, response, callback) {
 				return;
 			}
 			post = fields;
-			post.cdf_file_path = files.cdf_file.path;
-			post.cdf_file_name = files.cdf_file.name;
+			post.file_path = files.attached_file.path;
+			post.file_name = files.attached_file.name;
 			callback(post, request.url);
 		});
 	} else {
@@ -238,7 +238,7 @@ http.createServer(function (request, response) {
 			// console.log(post);
 			switch (url) {
 				case '/forms/add-new-cdf.html':
-					addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
+					addCDFEntry(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.file_path, post.file_name, function (err, result) {
 						if (err) {
 							console.log("Adding CDF failed - " + err);
 							response.writeHead(500, {
@@ -260,7 +260,7 @@ http.createServer(function (request, response) {
 				break;
 				
 				case '/forms/change-cdf-version.html':
-					changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.cdf_file_path, post.cdf_file_name, function (err, result) {
+					changeCDFVersion(post.cdf_name, post.cdf_version, post.cdf_schema_type, post.file_path, post.file_name, function (err, result) {
 						if (err) {
 							response.writeHead(500, {
 								"Content-Type" : "text/plain"
@@ -279,6 +279,16 @@ http.createServer(function (request, response) {
 						}
 					});
 				break;
+                
+                case '/validate':
+                    var result = "Invalid";
+                    console.log("Validating CDF succeeded - " + result);
+                    response.writeHead(200, {
+                    	"Content-Type" : "text/plain"
+                    });
+                    response.write(result);
+                    response.end();
+                    return;
 			}
 		});
 	} else if (request.method === "GET") {

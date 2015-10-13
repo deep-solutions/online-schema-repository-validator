@@ -4,20 +4,46 @@
   <head>
 
   	<title>Common Data Format - </title>
+    <link rel="stylesheet" href="/css/form-basic.css">
     <link rel="stylesheet" href="/css/default.css">
     <meta charset="utf-8">
 	
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/xmllint.js"></script>
     <script type="text/javascript" src="/js/view_cdf.js"></script>
   </head>
 
   <body>
 
-    <h1>Common Data Format - <span id="cdf-name"></span></h1>
-    <h2>CDF Version: <span id="cdf-version"></span></h2>
+    <h1>Common Data Format - <span id="cdf_name"></span></h1>
+    <h2>CDF Version: <span id="cdf_version"></span></h2>
     <p>This is a prototype wiki page.</p>
-	<p>Schema is <span id="cdf-address"><a href="#" id="cdf-link">here</a></span></p>
-
+	<p>Schema is <span id="cdf_address"><a href="#" id="cdf_link">here</a></span></p>
+    
+    <p>Validate a sample file here.</p>
+    
+    <div class="form-content">
+		<form id="validate-cdf" class="form-basic" method="post" action="validate" enctype="multipart/form-data">
+			<div class="form-title-row">
+                <h1>Validate CDF</h1>
+            </div>
+            <div class="form-row">
+				<label>
+					<span>File</span>
+					<input type="file" name="attached_file"/>
+				</label>
+			</div>
+            <div class="form-row">
+				<input type="hidden" name="cdf_address_validate" value=""/>
+			</div>
+			<div class="form-row">
+                <button type="submit">Validate</button>
+            </div>
+		</form>
+    </div>
+    
+    <p>The CDF fields are described below.</p>
+    
     <table style="width:100%">
         <tr>
             <th>Name</th>
