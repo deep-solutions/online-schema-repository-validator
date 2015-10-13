@@ -1,5 +1,5 @@
 $(document).ready(function () {
-	var cdf_list = $('#cdf-list').get(0);
+	var cdf_list = $('#schema-list').get(0);
 	// alert(cdf_list.outerHTML);
 	$.get('/data/cdf_list.json', function (response) {
 		var result = JSON.parse(response);

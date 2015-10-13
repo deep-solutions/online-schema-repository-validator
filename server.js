@@ -289,11 +289,13 @@ http.createServer(function (request, response) {
                     response.end();
 					console.log("Finished processing");
                     return;
+				break;
 			}
 		});
 	} else if (request.method === "GET") {
 		var uri = url.parse(request.url).pathname,
-			filename = path.join(site_root, uri);
+			filename = path.join(site_root, uri),
+			content_type = "text/plain";
 		
 		fs.exists(filename, function (exists) {
 			if (!exists) {
@@ -305,8 +307,24 @@ http.createServer(function (request, response) {
 				return;
 			}
 
-			if (fs.statSync(filename).isDirectory())
+			if (fs.statSync(filename).isDirectory()) {
 				filename += "/index.html";
+				content_type = "text/html";
+			} else {
+				switch (filename.split(".").pop()) {
+					case "xml":
+					case "xsd":
+						content_type = "application/xml";
+					break;
+					
+					case "json":
+						content_type = "application/json";
+					break;
+					
+					default:
+					break;
+				}
+			}
 
 			fs.readFile(filename, "binary", function (err, file) {
 				if (err) {

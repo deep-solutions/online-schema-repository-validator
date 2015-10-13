@@ -12,18 +12,20 @@ h1 {
     text-align: center;
 }
 
-ul#cdf-list,
-    ul#cdf-list li {
+ul#action-list, ul#schema-list,
+	ul#action-list li,
+    ul#schema-list li {
     /* Setting a common base */
     margin: 1%;
     padding: 1%;
 }
 	
-ul#cdf-list {
+ul#action-list, ul#schema-list {
     
 }
 
-ul#cdf-list li {
+ul#action-list li,
+	ul#schema-list li {
     display: inline-block;
     margin: 10px;
     border: 3px solid black;
@@ -35,11 +37,11 @@ ul#cdf-list li {
     *display: inline;
 }
 
-ul#cdf-list a {
+ul#action-list, ul#schema-list a {
     
 }
 
-ul#cdf-list a:hover {
+ul#action-list a:hover, ul#schema-list a:hover {
     text-decoration: none;
     background-color: SkyBlue;
 }
