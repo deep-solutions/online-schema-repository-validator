@@ -58,7 +58,7 @@ $(document).ready(function () {
 
 window.onload = function () {
 
-	//Better to construct options first and then pass it as a parameter
+	// Better to construct options first and then pass it as a parameter
 	var options = {
 		title: {
 			text: "Runtime Statistics for " + $("#cdf_name").text(),
@@ -72,7 +72,7 @@ window.onload = function () {
 		},
 		data: [
 		{
-			type: "column", //change it to line, area, bar, pie, etc
+			type: "column", // Change it to line, area, bar, pie, etc
 			axisYType: "secondary",
 			dataPoints: [
 				{ x: -1, y: (Math.floor(Math.random() * 5 + 10)) },
